@@ -24,7 +24,7 @@ namespace AutoRecon.NET.Modules
                 {
                     foreach (var port in Ports)
                     {
-                        await _executor.ExecuteCommandAsync("dig", ["-p", $"{port} @{target} {domain}"]);
+                        await _executor.ExecuteCommandAsync("dig AXFR", ["-p", $"{port} @{target} {domain}"]);
                     }
                 }
             }
@@ -33,7 +33,7 @@ namespace AutoRecon.NET.Modules
             {
                 foreach (var port in Ports)
                 {
-                    await _executor.ExecuteCommandAsync("dig", ["-p", $"{port} @{target} {target}"]);
+                    await _executor.ExecuteCommandAsync("dig AXFR", ["-p", $"{port} @{target} {target}"]);
                 }
             }
         }
