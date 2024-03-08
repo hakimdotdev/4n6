@@ -1,5 +1,5 @@
 ﻿
-using MediatR;
+using Mediator;
 
 namespace AutoRecon.Domain.Common;
 

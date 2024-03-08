@@ -7,6 +7,8 @@ namespace AutoRecon.Domain.Common
         public TargetType Type { get; set; }
         public List<string> Values { get; set; }
 
+        public List<ushort> Ports { get; set; }
+
         public Target(TargetType type, List<string> values)
         {
             Type = type;
@@ -27,8 +29,9 @@ namespace AutoRecon.Domain.Common
         {
             foreach (var value in Values)
             {
-                if (!IPAddress.TryParse(value, out IPAddress? ipAddress))
+                if (!IPAddress.TryParse(value, out var ip))
                 {
+                    break;
                     throw new ArgumentException($"Invalid IP address: {value}");
                 }
             }
@@ -40,6 +43,7 @@ namespace AutoRecon.Domain.Common
             {
                 if (!value.Contains('.'))
                 {
+                    break;
                     throw new ArgumentException($"Invalid FQDN: {value}");
                 }
             }

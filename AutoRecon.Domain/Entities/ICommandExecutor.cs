@@ -8,6 +8,8 @@ namespace AutoRecon.Domain.Common
 {
     public interface ICommandExecutor
     {
-        Task<CommandResult> ExecuteCommandAsync(string command, string[] args, CancellationToken cancellationToken = default);
+        public Task ExecAsync(string command, string[] args, CancellationToken cancellationToken = default);
+        public Task<(string, string)> ExecBufferedAsync(string command, string[] args, CancellationToken cancellationToken = default);
+
     }
 }

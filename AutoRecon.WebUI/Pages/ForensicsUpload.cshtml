@@ -1,0 +1,54 @@
+﻿@page
+@model AutoRecon.WebUI.Pages.ForensicsUpload
+@inject Microsoft.Extensions.Localization.IStringLocalizer<ForensicsUpload> Localizer
+@{
+    ViewData["Title"] = "ForensicsUpload";
+}
+
+<div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">@Localizer["ForensicsUpload"]</h5>
+        </div>
+        <div class="modal-body">
+            <form asp-action="Upload" asp-controller="Upload" method="post" enctype="multipart/form-data">
+                @if (Model.IsResponse)
+                {
+                    if (Model.IsSuccess)
+                    {
+                        <div class="alert alert-success">
+                            @Model.Message
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger">
+                            @Model.Message
+                        </div>
+                    }
+                }
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <label class="col-form-label">@Localizer["FileName"]</label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <label class="col-form-label">@Localizer["SelectFile"]</label>
+                        <input asp-for="ForensicImage" class="form-control" />
+                        <span asp-validation-for="ForensicImage" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-success">@Localizer["UploadFile"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

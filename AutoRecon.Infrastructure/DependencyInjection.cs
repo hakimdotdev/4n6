@@ -1,10 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AutoRecon.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.WindowsAzure.Management.Compute.Models;
 
 namespace AutoRecon.Infrastructure
 {
-    internal class DependencyInjection;
+    public static class InfrastructureStartup
+    {
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+        {
+            return services.AddSingleton<IAutoReconDbContext, AutoReconDbContext>();
+
+        }
+    }
 }

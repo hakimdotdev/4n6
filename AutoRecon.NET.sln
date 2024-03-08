@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoRecon.Infrastructure", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoRecon.Console", "AutoRecon.Console\AutoRecon.Console.csproj", "{467313EE-5B2D-48E5-8D2E-5FFF980B7857}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoRecon.WebUI", "AutoRecon.WebUI\AutoRecon.WebUI.csproj", "{D01E0BFF-25FF-4762-84F5-252BB694E4F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoRecon.WebUI", "AutoRecon.WebUI\AutoRecon.WebUI.csproj", "{D01E0BFF-25FF-4762-84F5-252BB694E4F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

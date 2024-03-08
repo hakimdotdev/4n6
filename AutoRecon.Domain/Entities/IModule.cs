@@ -2,8 +2,8 @@
 
 namespace AutoRecon.Domain.Entities
 {
-    public interface IScanModule
+    public interface IModule
     {
-        public async Task Run(Target target) { }
+        public async Task Handle(Target target) { }
     }
 }

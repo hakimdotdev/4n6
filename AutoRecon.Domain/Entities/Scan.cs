@@ -9,5 +9,6 @@ namespace AutoRecon.Domain.Entities
     public class Scan : BaseAuditableEntity
     {
         public long Duration { get; set; }
+        public int Priority { get; set; }
     }
 }
