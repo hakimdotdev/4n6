@@ -6,4 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\Migrations\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AutoRecon.Domain\AutoRecon.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

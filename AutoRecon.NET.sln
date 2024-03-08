@@ -3,17 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34622.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoRecon.NET", "AutoRecon.NET\AutoRecon.NET.csproj", "{A5112792-4E6D-45AF-A8C9-0D7E69C22C9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoRecon.Domain", "AutoRecon.Domain\AutoRecon.Domain.csproj", "{11693201-1727-44A0-A2A9-DA2BF22017BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoRecon.Domain", "AutoRecon.Domain\AutoRecon.Domain.csproj", "{11693201-1727-44A0-A2A9-DA2BF22017BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoRecon.Application", "AutoRecon.Application\AutoRecon.Application.csproj", "{8696D85B-C804-4EE4-B240-3B143D58B762}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoRecon.Application", "AutoRecon.Application\AutoRecon.Application.csproj", "{8696D85B-C804-4EE4-B240-3B143D58B762}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoRecon.Infrastructure", "AutoRecon.Infrastructure\AutoRecon.Infrastructure.csproj", "{214013BC-E089-4D4F-A8B8-E0D3DDD90C41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoRecon.Infrastructure", "AutoRecon.Infrastructure\AutoRecon.Infrastructure.csproj", "{214013BC-E089-4D4F-A8B8-E0D3DDD90C41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoRecon.Console", "AutoRecon.Console\AutoRecon.Console.csproj", "{467313EE-5B2D-48E5-8D2E-5FFF980B7857}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoRecon.UI", "AutoRecon.UI\AutoRecon.UI.csproj", "{990BA900-F6D5-4CA1-9AC1-8A7077CDFD24}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoRecon.Console", "AutoRecon.Console\AutoRecon.Console.csproj", "{467313EE-5B2D-48E5-8D2E-5FFF980B7857}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoRecon.WebUI", "AutoRecon.WebUI\AutoRecon.WebUI.csproj", "{D01E0BFF-25FF-4762-84F5-252BB694E4F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +19,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A5112792-4E6D-45AF-A8C9-0D7E69C22C9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A5112792-4E6D-45AF-A8C9-0D7E69C22C9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A5112792-4E6D-45AF-A8C9-0D7E69C22C9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A5112792-4E6D-45AF-A8C9-0D7E69C22C9E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{11693201-1727-44A0-A2A9-DA2BF22017BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{11693201-1727-44A0-A2A9-DA2BF22017BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11693201-1727-44A0-A2A9-DA2BF22017BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -37,14 +31,14 @@ Global
 		{214013BC-E089-4D4F-A8B8-E0D3DDD90C41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{214013BC-E089-4D4F-A8B8-E0D3DDD90C41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{214013BC-E089-4D4F-A8B8-E0D3DDD90C41}.Release|Any CPU.Build.0 = Release|Any CPU
-		{990BA900-F6D5-4CA1-9AC1-8A7077CDFD24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{990BA900-F6D5-4CA1-9AC1-8A7077CDFD24}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{990BA900-F6D5-4CA1-9AC1-8A7077CDFD24}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{990BA900-F6D5-4CA1-9AC1-8A7077CDFD24}.Release|Any CPU.Build.0 = Release|Any CPU
 		{467313EE-5B2D-48E5-8D2E-5FFF980B7857}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{467313EE-5B2D-48E5-8D2E-5FFF980B7857}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{467313EE-5B2D-48E5-8D2E-5FFF980B7857}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{467313EE-5B2D-48E5-8D2E-5FFF980B7857}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D01E0BFF-25FF-4762-84F5-252BB694E4F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D01E0BFF-25FF-4762-84F5-252BB694E4F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D01E0BFF-25FF-4762-84F5-252BB694E4F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D01E0BFF-25FF-4762-84F5-252BB694E4F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
