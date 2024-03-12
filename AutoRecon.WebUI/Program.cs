@@ -38,10 +38,7 @@ builder.Services.AddRazorPages()
                     opts.Conventions.AddAreaPageRoute("Account", "/Login", "/Account/Login");
                 });
 
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/Account/Login";
-});
+builder.Services.ConfigureApplicationCookie(options => options.LoginPath = "/Account/Login");
 
 builder.Services.Configure<Fido2Configuration>(builder.Configuration.GetSection("fido2"));
 builder.Services.AddScoped<Fido2Store>();

@@ -8,12 +8,10 @@ namespace AutoRecon.Application.Services
 
         public void RunCommand(string command)
         {
-            using (var cmd = _sshClient.CreateCommand(command))
-            {
-                var asyncExecute = cmd.BeginExecute();
-                cmd.OutputStream.CopyTo(Console.OpenStandardOutput());
-                cmd.EndExecute(asyncExecute);
-            }
+            using var cmd = _sshClient.CreateCommand(command);
+            var asyncExecute = cmd.BeginExecute();
+            cmd.OutputStream.CopyTo(Console.OpenStandardOutput());
+            cmd.EndExecute(asyncExecute);
         }
     }
 }
