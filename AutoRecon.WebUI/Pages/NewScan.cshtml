@@ -3,8 +3,9 @@
 @{
     ViewData["Title"] = "Create New Scan";
 }
-@using System.Collections.Generic
-@using AutoRecon.Domain;
+@using AutoRecon.Domain.Entities.Recon;
+@using AutoRecon.WebUI.Pages
+
 <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
     <div class="modal-content">
         <div class="modal-header">
@@ -31,7 +32,7 @@
                         foreach (var moduleType in typeof(AutoRecon.Application.Modules.DNSZoneTransfer).Assembly.GetTypes())
                         {
                             if (moduleType.Namespace == "AutoRecon.Application.Modules" &&
-                            (typeof(AutoRecon.Domain.Entities.ServiceScan).IsAssignableFrom(moduleType) ||
+                            (typeof(Scan).IsAssignableFrom(moduleType) ||
                             typeof(AutoRecon.Domain.Entities.IModule).IsAssignableFrom(moduleType)))
                             {
                                 // Get module tags using reflection

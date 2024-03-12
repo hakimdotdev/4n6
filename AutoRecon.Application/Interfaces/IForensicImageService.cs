@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AutoRecon.Application.Interfaces
+﻿namespace AutoRecon.Application.Interfaces
 {
-    public interface IForensicImageService
-    {
-    }
+    public interface IForensicImageService;
 }

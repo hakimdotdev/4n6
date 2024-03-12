@@ -1,12 +1,7 @@
 ﻿using AutoRecon.Domain.Common;
 using AutoRecon.Domain.Entities;
-using CliWrap;
+using AutoRecon.Domain.Entities.Recon;
 using Mediator;
-using Microsoft.EntityFrameworkCore.Metadata;
-using System;
-using System.Net;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace AutoRecon.Application.Modules
 {
@@ -21,7 +16,8 @@ namespace AutoRecon.Application.Modules
             Name = "DNS Zone Transfer";
         }
 
-        public DNSZoneTransfer() {}
+        public DNSZoneTransfer()
+        { }
 
         public async ValueTask<string> Handle(ScanRequest request, CancellationToken cancellationToken)
         {
@@ -45,8 +41,5 @@ namespace AutoRecon.Application.Modules
             }
             return String.Empty;
         }
-
-        
-        
     }
 }

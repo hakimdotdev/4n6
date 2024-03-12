@@ -1,26 +1,25 @@
-using AutoRecon.Domain.Common;
-using Microsoft.AspNetCore.Mvc;
+using AutoRecon.Domain.Entities.Recon;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace AutoRecon.WebUI.Pages
 {
     public class NewScanModel : PageModel
     {
-        public required ScanRequest ScanRequest { get; set; }
+        public ScanRequest ScanRequest { get; set; }
+
         public void OnGet()
         {
         }
-        public void OnPost() 
+
+        public void OnPost()
         {
             VerifyModulesAndTargets();
         }
 
         private void VerifyModulesAndTargets()
         {
-            var targets = ScanRequest.Targets;
-            var modules = ScanRequest.Modules;
-
-
+            _ = ScanRequest.Targets;
+            _ = ScanRequest.Modules;
         }
     }
 }

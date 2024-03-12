@@ -1,7 +1,4 @@
-﻿using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
-using Mediator;
-using AutoRecon.Application.Interfaces;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace AutoRecon.Application
 {
@@ -22,7 +19,7 @@ namespace AutoRecon.Application
             //    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(PerformanceBehaviour<,>));
             //});
 
-            services.AddScoped<IAzureVmService, AzureVmService>();
+            //services.AddScoped<IAzureVmService, AzureVmService>();
             services.AddMediator(options =>
             {
                 options.Namespace = "AutoRecon.Application";

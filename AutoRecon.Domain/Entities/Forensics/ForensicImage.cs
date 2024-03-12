@@ -4,7 +4,7 @@ namespace AutoRecon.Domain.Entities
 {
     public class ForensicImage : BaseAuditableEntity
     {
-        public int Id { get; set; }
+        public string Description { get; set; }
         public string FileName { get; set; }
     }
 }

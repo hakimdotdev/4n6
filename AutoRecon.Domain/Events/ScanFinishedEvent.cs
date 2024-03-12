@@ -1,4 +1,5 @@
 ﻿using AutoRecon.Domain.Common;
+using AutoRecon.Domain.Entities.Recon;
 
 namespace AutoRecon.Domain.Entities;
 

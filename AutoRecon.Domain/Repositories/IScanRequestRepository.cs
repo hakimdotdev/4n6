@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using AutoRecon.Domain.Common;
+﻿using AutoRecon.Domain.Entities.Recon;
 
 namespace AutoRecon.Domain.Repositories
 {

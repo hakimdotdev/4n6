@@ -1,9 +1,41 @@
 ﻿@page
-@model DashboardModel
+@model AutoRecon.WebUI.Pages.Dashboard
 @{
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Dashboard</h1>
+<div class="container">
+
+@*     <div class="row">
+        <div class="col-md-4">
+            <h2>Scans</h2>
+            <p>Total Scans: @Model.TotalScans</p>
+            <ul>
+                @foreach (var scan in Model.UserScans)
+                {
+                    <li>@scan.Name</li>
+                }
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h2>Virtual Machines</h2>
+            <p>Total Virtual Machines: @Model.TotalVirtualMachines</p>
+            <ul>
+                @foreach (var vm in Model.UserVirtualMachines)
+                {
+                    <li>@vm.Name</li>
+                }
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h2>Blobs</h2>
+            <p>Total Blobs: @Model.TotalBlobs</p>
+            <ul>
+                @foreach (var blob in Model.UserBlobs)
+                {
+                    <li>@blob.Name</li>
+                }
+            </ul>
+        </div>
+    </div> *@
 </div>

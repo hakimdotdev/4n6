@@ -1,23 +1,60 @@
-using Microsoft.Azure.Management.Storage.Fluent.Models;
-using Microsoft.Azure.Management.Compute;
-using Microsoft.Extensions.Azure;
-using Azure.Identity;
-using Microsoft.WindowsAzure.Management.Compute;
-using Microsoft.Extensions.DependencyInjection;
-using Mediator;
 using AutoRecon.Application;
+using AutoRecon.Domain.Entities;
 using AutoRecon.Infrastructure;
-using System.Reflection;
+using AutoRecon.Infrastructure.Auth;
+using Fido2Identity;
+using Fido2NetLib;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("AutoReconDbContextConnection") ?? throw new InvalidOperationException("Connection string 'AutoReconDbContextConnection' not found.");
 
+builder.Services.AddDbContext<AutoReconDbContext>(options => options.UseSqlServer(connectionString));
+
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<AutoReconDbContext>().AddTokenProvider<Fido2UserTwoFactorTokenProvider>("FIDO2");
+
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.Secure = CookieSecurePolicy.Always;
+    options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
+    //options.OnAppendCookie = cookieContext =>
+    //    CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
+    //options.OnDeleteCookie = cookieContext =>
+    //    CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
+});
 
 // Add services to the container.
-builder.Services.AddRazorPages().AddMvcLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix).AddDataAnnotationsLocalization();
+builder.Services.AddRazorPages()
+                .AddMvcLocalization(LanguageViewLocationExpanderFormat.Suffix)
+                .AddDataAnnotationsLocalization().AddRazorPagesOptions(opts =>
+                {
+                    opts.Conventions.AddPageRoute("/Dashboard", "/");
+                    opts.Conventions.AddPageRoute("/Dashboard", "home");
+                    opts.Conventions.AddPageRoute("/Dashboard", "index");
+                    opts.Conventions.AddAreaPageRoute("Account", "/Login", "/Account/Login");
+                });
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+});
+
+builder.Services.Configure<Fido2Configuration>(builder.Configuration.GetSection("fido2"));
+builder.Services.AddScoped<Fido2Store>();
+// Adds a default in-memory implementation of IDistributedCache.
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+// Add services from other layers
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices();
 
@@ -35,6 +72,14 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
 });
+
+builder.Services.AddAuthentication()
+                .AddBearerToken(IdentityConstants.BearerScheme);
+
+builder.Services.AddAuthorizationBuilder();
+
+builder.Services.AddIdentityCore<User>().AddEntityFrameworkStores<AutoReconDbContext>().AddApiEndpoints();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,10 +90,14 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.MapIdentityApi<User>();
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthorization();
 

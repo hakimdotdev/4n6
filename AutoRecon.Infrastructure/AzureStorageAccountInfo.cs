@@ -2,8 +2,7 @@
 {
     public class AzureStorageAccountInfo
     {
-        public required string ResourceGroupName { get; set; }
-        public required string StorageAccountName { get; set; }
+        public string ResourceGroupName { get; set; }
+        public string StorageAccountName { get; set; }
     }
-
 }

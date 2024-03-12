@@ -10,6 +10,9 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["AutoRecon.WebUI/AutoRecon.WebUI.csproj", "AutoRecon.WebUI/"]
+COPY ["AutoRecon.Application/AutoRecon.Application.csproj", "AutoRecon.Application/"]
+COPY ["AutoRecon.Domain/AutoRecon.Domain.csproj", "AutoRecon.Domain/"]
+COPY ["AutoRecon.Infrastructure/AutoRecon.Infrastructure.csproj", "AutoRecon.Infrastructure/"]
 RUN dotnet restore "./AutoRecon.WebUI/AutoRecon.WebUI.csproj"
 COPY . .
 WORKDIR "/src/AutoRecon.WebUI"
