@@ -1,19 +1,15 @@
-﻿using Microsoft.Azure.Management.Compute.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Azure.ResourceManager.Compute;
 
 namespace AutoRecon.Application.Interfaces
 {
     public interface IAzureVmService
     {
         Task Startsync(string vmName);
+
         Task StopAsync(string vmName);
 
-        Task CreateAsync(VirtualMachine vmParams);
-        Task DeleteAsync(VirtualMachine vmParams);
+        Task CreateAsync(VirtualMachineResource vmParams);
 
+        Task DeleteAsync(VirtualMachineResource vmParams);
     }
 }
