@@ -1,39 +1,31 @@
 ﻿using AutoRecon.Domain.Common;
 using CliWrap;
 using CliWrap.Buffered;
+using Microsoft.AspNetCore.SignalR;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace AutoRecon.Domain.Entities.Recon
+namespace AutoRecon.Application.Services
 {
     public class CommandService : ICommandExecutor
-    {
-        public async Task ExecAsync(string command, string[] args, CancellationToken cancellationToken = default)
+    {       private readonly IHubContext<ConsoleOutputHub> _hubContext;
+        private readonly IUserContext _userContext;
+
+        public CommandService(IHubContext<ConsoleOutputHub> hubContext, IUserContext userContext)
         {
-            var tupleList = new List<(string Flag, string Value)>();
-            for (int i = 0; i < args.Length; i += 2)
-            {
-                if (i + 1 < args.Length)
-                {
-                    tupleList.Add((args[i], args[i + 1]));
-                }
-            }
-
-            var x = Cli.Wrap(command);
-
-            foreach (var (Flag, Value) in tupleList)
-            {
-                x = x.WithArguments(new[] { Flag, Value });
-            }
-
-            await x.ExecuteBufferedAsync(cancellationToken);
+            _hubContext = hubContext;
+            _userContext = userContext;
         }
 
-        /// <summary>
-        /// Executes a command buffered and returns a tuple with the stdout and stderr pipe data
-        /// </summary>
-        /// <param name="command"></param>
-        /// <param name="args"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>StandardOutput, StandardError pipe data as string</returns>
+
+   public async Task ExecAsync(string command, string[] args, CancellationToken cancellationToken = default)
+        {
+            var (stdout, stderr) = await ExecBufferedAsync(command, args, cancellationToken);
+
+            // Send stdout and stderr to the current user only
+            await _hubContext.Clients.User(_userContext.UserId).SendAsync("ReceiveConsoleOutput", stdout, stderr, cancellationToken);
+        }
+
         public async Task<(string, string)> ExecBufferedAsync(string command, string[] args, CancellationToken cancellationToken = default)
         {
             var tupleList = new List<(string Flag, string Value)>();

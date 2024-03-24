@@ -10,22 +10,11 @@ namespace AutoRecon.Application
 
             //services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-            //services.AddMediator(cfg =>
-            //{
-            //    cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
-            //    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehaviour<,>));
-            //    //cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehaviour<,>));
-            //    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
-            //    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(PerformanceBehaviour<,>));
-            //});
+            services.AddSignalR();
 
-            //services.AddScoped<IAzureVmService, AzureVmService>();
-            services.AddMediator(options =>
-            {
-                options.Namespace = "AutoRecon.Application";
-                options.ServiceLifetime = ServiceLifetime.Scoped;
-            });
 
+
+            services.AddMediator();
             return services;
         }
     }

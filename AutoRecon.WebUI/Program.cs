@@ -73,11 +73,28 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 builder.Services.AddAuthentication()
                 .AddBearerToken(IdentityConstants.BearerScheme);
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAuthenticatedUser", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+    });
+
+    options.AddPolicy("RequireScanLogAccess", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        // Add additional requirements as needed, e.g., role-based or claims-based authorization
+    });
+});
+
 builder.Services.AddAuthorizationBuilder();
 
 builder.Services.AddIdentityCore<User>().AddEntityFrameworkStores<AutoReconDbContext>().AddApiEndpoints();
+builder.Services.AddSingleton(TimeProvider.System);
 
 var app = builder.Build();
+
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -88,6 +105,19 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.MapIdentityApi<User>();
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapRazorPages();
+
+    endpoints.MapControllerRoute(
+        name: "scan-log",
+        pattern: "scans/{id}/log",
+        defaults: new { controller = "Scan", action = "GetScanLog" }
+    ).RequireAuthorization("RequireScanLogAccess");
+
+    // Add other endpoint mappings here
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

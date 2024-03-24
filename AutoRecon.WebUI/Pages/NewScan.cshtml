@@ -6,7 +6,7 @@
 @using AutoRecon.Domain.Entities.Recon;
 @using AutoRecon.WebUI.Pages
 
-<div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
     <div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">Scan Request</h5>
@@ -15,7 +15,7 @@
         <div class="modal-body">
             <div class="form-group">
                 <label for="Targets">Targets</label>
-                <input type="text" class="form-control" id="Targets" name="Targets" value="@Model.ScanRequest" readonly>
+                <input type="text" class="form-control" id="Targets" name="Targets" value="@Model.ScanRequest">
             </div>
             <div class="form-group">
                 <label for="Description">Description</label>
@@ -25,24 +25,20 @@
                 <label for="Modules">Modules</label>
                 <select class="form-select" id="Modules" name="Modules" multiple>
                     @{
-                        // Dictionary to store module types grouped by tags
                         var modulesByTag = new Dictionary<string, List<Type>>();
 
-                        // Collect module types and group them by tags
                         foreach (var moduleType in typeof(AutoRecon.Application.Modules.DNSZoneTransfer).Assembly.GetTypes())
                         {
                             if (moduleType.Namespace == "AutoRecon.Application.Modules" &&
                             (typeof(Scan).IsAssignableFrom(moduleType) ||
                             typeof(AutoRecon.Domain.Entities.IModule).IsAssignableFrom(moduleType)))
                             {
-                                // Get module tags using reflection
                                 var tagsProperty = moduleType.GetProperty("Tags");
                                 if (tagsProperty != null)
                                 {
                                     var tagsValue = tagsProperty.GetValue(Activator.CreateInstance(moduleType)) as List<string>;
                                     if (tagsValue != null)
                                     {
-                                        // Add module type to each tag's list of module types
                                         foreach (var tag in tagsValue)
                                         {
                                             if (!modulesByTag.ContainsKey(tag))
@@ -55,23 +51,26 @@
                                 }
                             }
                         }
-
-                        // Render options grouped by tags
                         foreach (var (tag, moduleTypes) in modulesByTag)
                         {
-                            <optgroup label="@tag">
-                                @foreach (var moduleType in moduleTypes)
-                                {
-                                    <option value="@moduleType.Name">@moduleType.Name</option>
-                                }
-                            </optgroup>
+                            @* <optgroup label="@tag"> *@
+                            @foreach (var moduleType in moduleTypes)
+                            {
+                                                <option value="@moduleType.Name">@moduleType.Name</option>
+                            }
+                            @* </optgroup> *@
                         }
                     }
                 </select>
+                <div>
+                    <input type="checkbox" name="Alle Module ausführen"value="@Model.AllModules"></input>
+                </div>
             </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            The misuse of the software can result in criminal charges brought against the person in question
+            The developer will not be held responsible in the event any criminal charges be brought against anyone
+            misusing the software to break the law.
         </div>
     </div>
 </div>

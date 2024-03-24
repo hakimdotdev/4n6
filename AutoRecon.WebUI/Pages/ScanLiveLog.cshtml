@@ -1,0 +1,39 @@
+﻿@page
+@model AutoRecon.WebUI.Pages.ScanLiveLog
+<h1>Live Log</h1>
+
+
+<div>
+    <pre id="consoleOutput" class="console-output">
+        @foreach (var logEntry in Model.LogEntries)
+        {
+            <span class="@(logEntry.IsSuccess ? "success" : "failure")">@logEntry.Message</span>
+            <br />
+        }
+    </pre>
+</div>
+
+
+
+
+<style>
+    .console-output {
+        background-color: #000;
+        color: #fff;
+        border-radius: 10px;
+        padding: 10px;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 14px; /* Adjust font size as needed */
+        line-height: 1.5; /* Adjust line height as needed */
+        overflow-y: auto; /* Enable vertical scrolling */
+        max-height: 400px; /* Limit the maximum height of the container */
+    }
+
+    .success {
+        color: #00ff00;
+    }
+
+    .failure {
+        color: #ff0000;
+    }
+</style>

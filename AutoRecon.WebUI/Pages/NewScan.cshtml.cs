@@ -5,6 +5,7 @@ namespace AutoRecon.WebUI.Pages
 {
     public class NewScanModel : PageModel
     {
+        public bool AllModules { get; set; }
         public ScanRequest ScanRequest { get; set; }
 
         public void OnGet()
