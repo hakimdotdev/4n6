@@ -1,73 +1,108 @@
-﻿// using Microsoft.Extensions.Configuration;
-// using Microsoft.Extensions.Logging;
-// using System;
-// using System.IO;
-// using System.Threading;
-// using System.Threading.Tasks;
-// using Azure.Storage.Blobs;
-// using Azure.Storage.Blobs.Models;
-// using AutoRecon.Application.Interfaces;
-// using Mediator;
-// using Azure.ResourceManager.Compute;
-// using Azure.ResourceManager;
-// using Azure.Core;
+﻿using Azure;
+using Azure.Core;
+using Azure.Identity;
+using Azure.ResourceManager;
+using Azure.ResourceManager.Compute;
+using Azure.ResourceManager.Compute.Models;
+using Mediator;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
-// namespace AutoRecon.Application.Commands
-// {
-//     public class CreateAzureVmCommand(string vmName, string vhdFilePath) : IRequest<Unit>
-//     {
-//         public string VmName { get; } = vmName;
-//         public string VhdFilePath { get; } = vhdFilePath;
-//     }
+namespace AutoRecon.Application.Commands.AzureVm;
 
-//     public class CreateAzureVmCommandHandler(IConfiguration configuration, IAzureVmService azureVmService, ILogger<CreateAzureVmCommandHandler> logger) : IRequestHandler<CreateAzureVmCommand, Unit>
-//     {
-//         private readonly IConfiguration _configuration = configuration;
-//         private readonly IAzureVmService _azureVmService = azureVmService;
-//         private readonly ILogger<CreateAzureVmCommandHandler> _logger = logger;
+public class CreateAzureVmCommand(string virtualMachineName, string vhdFilePath) : IRequest<Unit>
+{
+    public string VirtualMachineName { get; } = virtualMachineName;
+    public string VhdFilePath { get; } = vhdFilePath;
+}
 
-//         public async ValueTask<Unit> Handle(CreateAzureVmCommand request, CancellationToken cancellationToken)
-//         {
-//             try
-//             {
-//                 var clientId = _configuration["Azure:ClientId"];
-//                 var clientSecret = _configuration["Azure:ClientSecret"];
-//                 var tenantId = _configuration["Azure:TenantId"];
-//                 var subscriptionId = _configuration["Azure:SubscriptionId"];
-//                 var resourceGroupName = _configuration["Azure:ResourceGroupName"];
-//                 var containerName = _configuration["Azure:BlobStorageContainerName"];
+public class CreateAzureVmCommandHandler : IRequestHandler<CreateAzureVmCommand, Unit>
+{
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<CreateAzureVmCommandHandler> _logger;
+    private readonly IMediator _mediator;
 
-//                 //ArmClient armClient = new(DefaultAu);
+    public CreateAzureVmCommandHandler(IMediator mediator, IConfiguration configuration,
+        ILogger<CreateAzureVmCommandHandler> logger)
+    {
+        _mediator = mediator;
+        _configuration = configuration;
+        _logger = logger;
+    }
 
-//                 var blobServiceClient = new BlobServiceClient(_configuration["Azure:BlobStorageConnectionString"]);
-//                 var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
-//                 await blobContainerClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
+    public async ValueTask<Unit> Handle(CreateAzureVmCommand request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var clientId = _configuration["Azure:ClientId"];
+            var clientSecret = _configuration["Azure:ClientSecret"];
+            var tenantId = _configuration["Azure:TenantId"];
+            var subscriptionId = _configuration["Azure:SubscriptionId"];
+            var resourceGroupName = _configuration["Azure:ResourceGroupName"];
 
-//                 var blobClient = blobContainerClient.GetBlobClient(Path.GetFileName(request.VhdFilePath));
-//                 var blobResponse = await blobClient.UploadAsync(request.VhdFilePath, true, cancellationToken);
+            var credentials = new ClientSecretCredential(tenantId, clientId, clientSecret);
+            var armClient = new ArmClient(credentials);
+            var subscription = await armClient.GetDefaultSubscriptionAsync();
+            var resourceGroup = await subscription.GetResourceGroups().GetAsync(resourceGroupName);
+            var vmCollection = resourceGroup.Value.GetVirtualMachines();
+            var vmName = request.VirtualMachineName;
 
-//                 _logger.LogInformation("Successfully uploaded to blob storage. {r}", blobResponse);
-//                 var vhdUri = blobClient.Uri.ToString();
+            var vhdBlobUri = await _mediator.Send(new CreateAzureBlobCommand(vmName, request.VhdFilePath),
+                cancellationToken);
 
-//                 // TODO: Handeln der Location, Reminder für Forensik in Bezug GDPR DSGVO in Readme
-//                 //var vmParams = new VirtualMachineData(AzureLocation.);
-//                 //VirtualMachineResource resource = new() { }
-//                 //await _azureVmService.CreateAsync(vmParams);
-//             }
-//             catch (Exception ex)
-//             {
-//                 _logger.LogError(ex, "Error creating Azure VM");
-//                 throw;
-//             }
+            var osType = await DetermineOperatingSystemType(vhdBlobUri, cancellationToken);
 
-//             return Unit.Value;
-//         }
+            var vmData = new VirtualMachineData(resourceGroup.Value.Data.Location)
+            {
+                HardwareProfile = new VirtualMachineHardwareProfile { VmSize = VirtualMachineSizeType.StandardF2 },
+                OSProfile = new VirtualMachineOSProfile
+                {
+                    AdminUsername = "adminUser",
+                    ComputerName = vmName
+                },
+                NetworkProfile = new VirtualMachineNetworkProfile
+                {
+                    NetworkInterfaces =
+                    {
+                        new VirtualMachineNetworkInterfaceReference
+                        {
+                            Id = new ResourceIdentifier(
+                                $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/networkInterfaces/<nicName>"),
+                            Primary = true
+                        }
+                    }
+                },
+                StorageProfile = new VirtualMachineStorageProfile
+                {
+                    OSDisk = new VirtualMachineOSDisk(DiskCreateOptionType.FromImage)
+                    {
+                        OSType = SupportedOperatingSystemType.Windows,
+                        Name = Guid.NewGuid().ToString(),
+                        VhdUri = new Uri(vhdBlobUri),
+                        Caching = CachingType.ReadWrite
+                    }
+                }
+            };
 
-//         public class VirtualMachineParams
-//         {
-//             public string ResourceGroupName { get; set; }
-//             public string VmName { get; set; }
-//             public string VhdUri { get; set; }
-//         }
-//     }
-// }
+            var vmOperation =
+                await vmCollection.CreateOrUpdateAsync(WaitUntil.Completed, vmName, vmData, cancellationToken);
+
+            _logger.LogInformation("Azure virtual machine creation initiated.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating Azure VM");
+            throw;
+        }
+
+        return Unit.Value;
+    }
+
+    private async Task<SupportedOperatingSystemType> DetermineOperatingSystemType(string vhdBlobUri,
+        CancellationToken cancellationToken)
+    {
+        // Add logic to determine the operating system type based on the VHDX file
+        // For example, you can inspect the VHDX file or its metadata
+        return SupportedOperatingSystemType.Windows; // Placeholder implementation
+    }
+}

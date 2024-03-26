@@ -5,13 +5,11 @@ namespace AutoRecon.Domain.Common;
 
 public abstract class BaseEntity
 {
-    [Key]
-    public Guid Id { get; set; } = Guid.NewGuid();
-
     private readonly List<BaseEvent> _domainEvents = [];
 
-    [NotMapped]
-    public IReadOnlyCollection<BaseEvent> DomainEvents => _domainEvents.AsReadOnly();
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+
+    [NotMapped] public IReadOnlyCollection<BaseEvent> DomainEvents => _domainEvents.AsReadOnly();
 
     public void AddDomainEvent(BaseEvent domainEvent)
     {

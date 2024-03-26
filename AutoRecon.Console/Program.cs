@@ -1,4 +1,3 @@
-﻿namespace AutoRecon.Console
-{
-    internal class Program;
-}
+﻿namespace AutoRecon.Console;
+
+internal class Program;

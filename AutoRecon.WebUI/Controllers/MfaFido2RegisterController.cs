@@ -2,21 +2,17 @@
 using AutoRecon.Infrastructure.Auth;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using System.Text;
 using static Fido2NetLib.Fido2;
 
-namespace Fido2Identity;
+namespace AutoRecon.WebUI.Controllers;
 
 [Route("api/[controller]")]
 public class MfaFido2RegisterController : Controller
 {
-    private readonly Fido2 _lib;
     private readonly Fido2Store _fido2Store;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly Fido2 _lib;
     private readonly IOptions<Fido2Configuration> _optionsFido2Configuration;
+    private readonly UserManager<IdentityUser> _userManager;
 
     public MfaFido2RegisterController(
         Fido2Store fido2Store,
@@ -27,7 +23,7 @@ public class MfaFido2RegisterController : Controller
         _optionsFido2Configuration = optionsFido2Configuration;
         _fido2Store = fido2Store;
 
-        _lib = new Fido2(new Fido2Configuration()
+        _lib = new Fido2(new Fido2Configuration
         {
             ServerDomain = _optionsFido2Configuration.Value.ServerDomain,
             ServerName = _optionsFido2Configuration.Value.ServerName,
@@ -38,20 +34,21 @@ public class MfaFido2RegisterController : Controller
 
     private static string FormatException(Exception e)
     {
-        return string.Format("{0}{1}", e.Message, e.InnerException != null ? " (" + e.InnerException.Message + ")" : "");
+        return string.Format("{0}{1}", e.Message,
+            e.InnerException != null ? " (" + e.InnerException.Message + ")" : "");
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Route("/mfamakeCredentialOptions")]
-    public async Task<JsonResult> MakeCredentialOptions([FromForm] string username, [FromForm] string displayName, [FromForm] string attType, [FromForm] string authType, [FromForm] bool requireResidentKey, [FromForm] string userVerification)
+    public async Task<JsonResult> MakeCredentialOptions([FromForm] string username, [FromForm] string displayName,
+        [FromForm] string attType, [FromForm] string authType, [FromForm] bool requireResidentKey,
+        [FromForm] string userVerification)
     {
         try
         {
             if (string.IsNullOrEmpty(username))
-            {
                 username = $"{displayName} (Usernameless user created at {DateTime.UtcNow})";
-            }
 
             var identityUser = await _userManager.FindByEmailAsync(username);
             var user = new Fido2User
@@ -67,10 +64,8 @@ public class MfaFido2RegisterController : Controller
             {
                 var items = await _fido2Store.GetCredentialsByUserNameAsync(identityUser.UserName);
                 foreach (var publicKeyCredentialDescriptor in items)
-                {
                     if (publicKeyCredentialDescriptor.Descriptor != null)
                         existingKeys.Add(publicKeyCredentialDescriptor.Descriptor);
-                }
             }
 
             // 3. Create options
@@ -86,7 +81,7 @@ public class MfaFido2RegisterController : Controller
             var exts = new AuthenticationExtensionsClientInputs
             {
                 Extensions = true,
-                UserVerificationMethod = true,
+                UserVerificationMethod = true
             };
 
             var options = _lib.RequestNewCredential(
@@ -127,7 +122,6 @@ public class MfaFido2RegisterController : Controller
             var success = await _lib.MakeNewCredentialAsync(attestationResponse, options, callback);
 
             if (success.Result != null)
-            {
                 // 3. Store the credentials in db
                 await _fido2Store.AddCredentialToUserAsync(options.User, new FidoStoredCredential
                 {
@@ -141,17 +135,14 @@ public class MfaFido2RegisterController : Controller
                     //AaGuid = success.Result.AaGuid // version 4
                     AaGuid = success.Result.Aaguid
                 });
-            }
 
             // 4. return "ok" to the client
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 return Json(new CredentialMakeResult("error",
-                        $"Unable to load user with ID '{_userManager.GetUserId(User)}'.",
-                        success.Result));
-            }
+                    $"Unable to load user with ID '{_userManager.GetUserId(User)}'.",
+                    success.Result));
 
             await _userManager.SetTwoFactorEnabledAsync(user, true);
             var userId = await _userManager.GetUserIdAsync(user);

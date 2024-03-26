@@ -1,8 +1,7 @@
-﻿namespace AutoRecon.Infrastructure
+﻿namespace AutoRecon.Infrastructure;
+
+public class AzureStorageAccountInfo
 {
-    public class AzureStorageAccountInfo
-    {
-        public string ResourceGroupName { get; set; }
-        public string StorageAccountName { get; set; }
-    }
+    public string ResourceGroupName { get; set; }
+    public string StorageAccountName { get; set; }
 }

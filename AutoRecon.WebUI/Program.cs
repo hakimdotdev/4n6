@@ -1,21 +1,21 @@
+using System.Globalization;
 using AutoRecon.Application;
 using AutoRecon.Domain.Entities;
 using AutoRecon.Infrastructure;
 using AutoRecon.Infrastructure.Auth;
-using Fido2Identity;
+using AutoRecon.Infrastructure.Data.Context;
 using Fido2NetLib;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.EntityFrameworkCore;
-using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("AutoReconDbContextConnection") ?? throw new InvalidOperationException("Connection string 'AutoReconDbContextConnection' not found.");
+// var connectionString = builder.Configuration.GetConnectionString("AutoReconDbContextConnection") ?? throw new InvalidOperationException("Connection string 'AutoReconDbContextConnection' not found.");
 
-builder.Services.AddDbContext<AutoReconDbContext>(options => options.UseSqlServer(connectionString));
+// builder.Services.AddDbContext<AutoReconDbContext>(options => options.UseSqlServer(connectionString));
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<AutoReconDbContext>().AddTokenProvider<Fido2UserTwoFactorTokenProvider>("FIDO2");
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<AutoReconDbContext>().AddTokenProvider<Fido2UserTwoFactorTokenProvider>("FIDO2");
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
@@ -29,24 +29,28 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 
 // Add services to the container.
 builder.Services.AddRazorPages()
-                .AddMvcLocalization(LanguageViewLocationExpanderFormat.Suffix)
-                .AddDataAnnotationsLocalization().AddRazorPagesOptions(opts =>
-                {
-                    opts.Conventions.AddPageRoute("/Dashboard", "/");
-                    opts.Conventions.AddPageRoute("/Dashboard", "home");
-                    opts.Conventions.AddPageRoute("/Dashboard", "index");
-                    opts.Conventions.AddAreaPageRoute("Account", "/Login", "/Account/Login");
-                });
+    .AddMvcLocalization(LanguageViewLocationExpanderFormat.Suffix)
+    .AddDataAnnotationsLocalization().AddRazorPagesOptions(opts =>
+    {
+        opts.Conventions.AddPageRoute("/Dashboard", "/");
+        opts.Conventions.AddPageRoute("/Dashboard", "home");
+        opts.Conventions.AddPageRoute("/Dashboard", "index");
+        opts.Conventions.AddAreaPageRoute("Account", "/Login", "/Account/Login");
+    });
 
 builder.Services.ConfigureApplicationCookie(options => options.LoginPath = "/Account/Login");
 
 builder.Services.Configure<Fido2Configuration>(builder.Configuration.GetSection("fido2"));
 builder.Services.AddScoped<Fido2Store>();
+
+var parseTimeout = int.TryParse(Environment.GetEnvironmentVariable("COOKIE_CACHE_TIMEOUT"), out var timeout);
+if (!parseTimeout) timeout = 10;
+;
 // Adds a default in-memory implementation of IDistributedCache.
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(2);
+    options.IdleTimeout = TimeSpan.FromMinutes(timeout);
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -62,23 +66,20 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     var supportedCultures = new[]
     {
         new CultureInfo("de-DE"),
-        new CultureInfo("en-US"),
+        new CultureInfo("en-US")
     };
 
-    options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US");
+    options.DefaultRequestCulture = new RequestCulture("en-US", "en-US");
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
 });
 
 builder.Services.AddAuthentication()
-                .AddBearerToken(IdentityConstants.BearerScheme);
+    .AddBearerToken(IdentityConstants.BearerScheme);
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("RequireAuthenticatedUser", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-    });
+    options.AddPolicy("RequireAuthenticatedUser", policy => { policy.RequireAuthenticatedUser(); });
 
     options.AddPolicy("RequireScanLogAccess", policy =>
     {
@@ -87,13 +88,13 @@ builder.Services.AddAuthorization(options =>
     });
 });
 
+
 builder.Services.AddAuthorizationBuilder();
 
 builder.Services.AddIdentityCore<User>().AddEntityFrameworkStores<AutoReconDbContext>().AddApiEndpoints();
 builder.Services.AddSingleton(TimeProvider.System);
 
 var app = builder.Build();
-
 
 
 // Configure the HTTP request pipeline.
@@ -106,18 +107,18 @@ if (!app.Environment.IsDevelopment())
 
 app.MapIdentityApi<User>();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapRazorPages();
+// app.UseEndpoints(endpoints =>
+// {
+//     endpoints.MapRazorPages();
 
-    endpoints.MapControllerRoute(
-        name: "scan-log",
-        pattern: "scans/{id}/log",
-        defaults: new { controller = "Scan", action = "GetScanLog" }
-    ).RequireAuthorization("RequireScanLogAccess");
+//     endpoints.MapControllerRoute(
+//         name: "scan-log",
+//         pattern: "scans/{id}/log",
+//         defaults: new { controller = "Scan", action = "GetScanLog" }
+//     ).RequireAuthorization("RequireScanLogAccess");
 
-    // Add other endpoint mappings here
-});
+//     // Add other endpoint mappings here
+// });
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

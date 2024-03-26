@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.SignalR;
 
-namespace AutoRecon.Application.Services
+namespace AutoRecon.Application.Services;
+
+public class ConsoleOutputHub : Hub
 {
-    public class ConsoleOutputHub : Hub
+    public async Task SendLogEntry(string message, bool isSuccess)
     {
- public async Task SendLogEntry(string message, bool isSuccess)
-        {
-            await Clients.All.SendAsync("ReceiveLogEntry", message, isSuccess);
-        }
+        await Clients.All.SendAsync("ReceiveLogEntry", message, isSuccess);
     }
 }

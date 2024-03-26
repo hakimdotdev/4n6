@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-
-namespace Fido2Identity;
+﻿namespace AutoRecon.Infrastructure.Auth;
 
 public class Fido2UserTwoFactorTokenProvider : IUserTwoFactorTokenProvider<IdentityUser>
 {

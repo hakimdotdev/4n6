@@ -1,6 +1,9 @@
 using AutoRecon.Domain.Entities;
 
-public interface IUserContext{
+namespace AutoRecon.Domain.Interfaces;
+
+public interface IUserContext
+{
     string UserId { get; }
     User User { get; }
 }

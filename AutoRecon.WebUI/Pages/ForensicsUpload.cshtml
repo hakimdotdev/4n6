@@ -1,14 +1,15 @@
 ﻿@page
-@model AutoRecon.WebUI.Pages.ForensicsUpload
-@inject Microsoft.Extensions.Localization.IStringLocalizer<ForensicsUpload> Localizer
+@using Microsoft.Extensions.Localization
+@model ForensicsUpload
+@inject IStringLocalizer<ForensicsUpload> Localizer
 @{
-    ViewData["Title"] = "ForensicsUpload";
+    ViewData["Title"] = Localizer["ForensicsUpload"];
 }
 
 <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
         <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">@Localizer["ForensicsUpload"]</h5>
+            <h5 class="modal-title">@Localizer["ForensicsUpload"]</h5>
         </div>
         <div class="modal-body">
             <div class="row mt-2">
@@ -17,47 +18,45 @@
                 </div>
                 <div class="col-12">
                     <div class="card-deck">
-                        <div class="card clickable-card rounded" onclick="selectHostingEnvironment('Azure')">
-                            <div class="card-body">
-                                <img src="~/images/azure_logo.png" alt="Azure" style="max-width:10%" class="card-img-top" />
+                        @{
+                            var hostingProviders = new List<dynamic>
+                            {
+                                new { Name = "aws", Logo = "aws-logo.png" },
+                                new { Name = "azure", Logo = "azure-logo.png" },
+                                new { Name = "vmware", Logo = "vmware-logo.png" }
+                            };
+                        }
+
+                        @foreach (var provider in hostingProviders)
+                        {
+                            <div class="card clickable-card rounded" onclick="selectHostingEnvironment('@provider.Name')">
+                                <div class="card-body">
+                                    <img src="~/images/@provider.Logo" alt="@provider.Name" style="max-width:10%" class="card-img-top"/>
+                                </div>
                             </div>
-                        </div>
-                        <div class="card clickable-card rounded" onclick="selectHostingEnvironment('AWS')">
-                            <div class="card-body">
-                                <img src="~/images/aws_logo.png" alt="AWS" style="max-width:10%" class="card-img-top" />
-                            </div>
-                        </div>
-                        <!-- Add more cards for other hosting environments here -->
+                        }
+
                     </div>
                 </div>
             </div>
-            <hr />
+            <hr/>
 
             <!-- Form for uploading files -->
             <form id="uploadForm" asp-action="Upload" asp-controller="ForensicsUpload" method="post" enctype="multipart/form-data">
                 <!-- Antiforgery token -->
-                <input type="hidden" name="__RequestVerificationToken" value=@Html.AntiForgeryToken()
-                <input type="hidden" id="selectedHostingEnvironment" name="selectedHostingEnvironment" />
+                <input type="hidden" name="__RequestVerificationToken" value="@Html.AntiForgeryToken()"/>
+                <input type="hidden" id="selectedHostingEnvironment" name="selectedHostingEnvironment"/>
 
                 @if (Model.IsResponse)
                 {
-                    if (Model.IsSuccess)
-                    {
-                        <div class="alert alert-success">
-                            @Model.Message
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-danger">
-                            @Model.Message
-                        </div>
-                    }
+                    <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger")">
+                        @Model.Message
+                    </div>
                 }
                 <div class="row mt-2">
                     <div class="col-12">
                         <label class="col-form-label">@Localizer["File"]</label>
-                        <input type="file" name="forensicImage" class="form-control" />
+                        <input type="file" name="forensicImage" class="form-control"/>
                         <span asp-validation-for="ForensicImage" class="text-danger"></span>
                     </div>
                 </div>
@@ -73,11 +72,11 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
+@@section Scripts {
+<script>
         function selectHostingEnvironment(environment) {
             document.getElementById("selectedHostingEnvironment").value = environment;
-            document.getElementById("uploadForm").style.display = "block";
+            document.getElementById("uploadForm").submit();
         }
     </script>
 }

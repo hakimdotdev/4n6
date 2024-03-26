@@ -66,7 +66,7 @@ async function handleSignInSubmit(event) {
     // ask browser for credentials (browser will ask connected authenticators)
     let credential;
     try {
-        credential = await navigator.credentials.get({ publicKey: makeAssertionOptions })
+        credential = await navigator.credentials.get({publicKey: makeAssertionOptions})
     } catch (err) {
         showErrorAlert(err.message ? err.message : err);
     }

@@ -2,18 +2,15 @@ using AutoRecon.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.SignalR;
+
 namespace AutoRecon.WebUI.Pages;
-public class ScanLiveLog : PageModel
+
+public class ScanLiveLog(IHubContext<ConsoleOutputHub> logHubContext) : PageModel
 {
-    private readonly IHubContext<ConsoleOutputHub> _logHubContext;
+    private readonly IHubContext<ConsoleOutputHub> _logHubContext =
+        logHubContext ?? throw new ArgumentNullException(nameof(logHubContext));
 
-    public List<LogEntry> LogEntries { get; private set; }
-
-    public ScanLiveLog(IHubContext<ConsoleOutputHub> logHubContext)
-    {
-        _logHubContext = logHubContext ?? throw new ArgumentNullException(nameof(logHubContext));
-        LogEntries = new List<LogEntry>();
-    }
+    public List<LogEntry> LogEntries { get; private set; } = [];
 
     public async Task OnGetAsync()
     {
@@ -35,7 +32,6 @@ public class ScanLiveLog : PageModel
         }
         catch (Exception ex)
         {
-
         }
 
         return Page();
@@ -43,12 +39,23 @@ public class ScanLiveLog : PageModel
 
     private async Task<string> ExecuteCommandAsync(string vmName, string command)
     {
+        ExExtensions.ThrowIfAnyNullOrWhiteSpace([vmName, command]);
         return "ddd";
     }
 }
 
 public class LogEntry
 {
-    public string Message { get; set; }
+    public required string Message { get; set; }
     public bool IsSuccess { get; set; }
+}
+
+public static class ExExtensions
+{
+    public static void ThrowIfAnyNullOrWhiteSpace(string[] arguments)
+    {
+        foreach (var arg in arguments)
+            if (string.IsNullOrWhiteSpace(arg))
+                throw new ArgumentException(nameof(arg));
+    }
 }

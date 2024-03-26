@@ -1,6 +1,6 @@
-namespace AutoRecon.Application.Interfaces
-{
-public interface ICloudVmService
+namespace AutoRecon.Application.Interfaces;
+
+public interface IVmService
 {
     Task CreateVmAsync(string vmName, CloudProvider provider);
     Task UploadForensicImageAsync(string vmName, byte[] image, CloudProvider provider);
@@ -15,5 +15,4 @@ public enum CloudProvider
     Azure,
     AWS,
     VMware
-}
 }

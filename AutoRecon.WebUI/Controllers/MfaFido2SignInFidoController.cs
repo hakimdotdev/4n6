@@ -1,20 +1,16 @@
 ﻿using AutoRecon.Infrastructure.Auth;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using System.Text;
 
-namespace Fido2Identity;
+namespace AutoRecon.WebUI.Controllers;
 
 [Route("api/[controller]")]
 public class MfaFido2SignInFidoController : Controller
 {
-    private readonly Fido2 _lib;
     private readonly Fido2Store _fido2Store;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly Fido2 _lib;
     private readonly IOptions<Fido2Configuration> _optionsFido2Configuration;
+    private readonly SignInManager<IdentityUser> _signInManager;
 
     public MfaFido2SignInFidoController(
         Fido2Store fido2Store,
@@ -25,7 +21,7 @@ public class MfaFido2SignInFidoController : Controller
         _signInManager = signInManager;
         _fido2Store = fido2Store;
 
-        _lib = new Fido2(new Fido2Configuration()
+        _lib = new Fido2(new Fido2Configuration
         {
             ServerDomain = _optionsFido2Configuration.Value.ServerDomain,
             ServerName = _optionsFido2Configuration.Value.ServerName,
@@ -36,7 +32,8 @@ public class MfaFido2SignInFidoController : Controller
 
     private static string FormatException(Exception e)
     {
-        return string.Format("{0}{1}", e.Message, e.InnerException != null ? " (" + e.InnerException.Message + ")" : "");
+        return string.Format("{0}{1}", e.Message,
+            e.InnerException != null ? " (" + e.InnerException.Message + ")" : "");
     }
 
     [HttpPost]
@@ -46,7 +43,8 @@ public class MfaFido2SignInFidoController : Controller
     {
         try
         {
-            var identityUser = await _signInManager.GetTwoFactorAuthenticationUserAsync() ?? throw new InvalidOperationException("Unable to load two-factor authentication user.");
+            var identityUser = await _signInManager.GetTwoFactorAuthenticationUserAsync() ??
+                               throw new InvalidOperationException("Unable to load two-factor authentication user.");
             var existingCredentials = new List<PublicKeyCredentialDescriptor>();
 
             if (!string.IsNullOrEmpty(identityUser.UserName))
@@ -55,7 +53,8 @@ public class MfaFido2SignInFidoController : Controller
                 {
                     DisplayName = identityUser.UserName,
                     Name = identityUser.UserName,
-                    Id = Fido2Store.GetUserNameInBytes(identityUser.UserName) // byte representation of userID is required
+                    Id = Fido2Store.GetUserNameInBytes(identityUser
+                        .UserName) // byte representation of userID is required
                 };
 
                 // 2. Get registered credentials from database
@@ -65,10 +64,12 @@ public class MfaFido2SignInFidoController : Controller
 
             var exts = new AuthenticationExtensionsClientInputs
             {
-                UserVerificationMethod = true,
+                UserVerificationMethod = true
             };
             // 3. Create options
-            var uv = string.IsNullOrEmpty(userVerification) ? UserVerificationRequirement.Discouraged : userVerification.ToEnum<UserVerificationRequirement>();
+            var uv = string.IsNullOrEmpty(userVerification)
+                ? UserVerificationRequirement.Discouraged
+                : userVerification.ToEnum<UserVerificationRequirement>();
             var options = _lib.GetAssertionOptions(
                 existingCredentials,
                 uv,
@@ -99,7 +100,8 @@ public class MfaFido2SignInFidoController : Controller
             var options = AssertionOptions.FromJson(jsonOptions);
 
             // 2. Get registered credential from database
-            var creds = await _fido2Store.GetCredentialByIdAsync(clientResponse.Id) ?? throw new Exception("Unknown credentials");
+            var creds = await _fido2Store.GetCredentialByIdAsync(clientResponse.Id) ??
+                        throw new Exception("Unknown credentials");
 
             // 3. Get credential counter from database
             var storedCounter = creds.SignatureCounter;
@@ -111,10 +113,7 @@ public class MfaFido2SignInFidoController : Controller
                 return storedCreds.Any(c => c.Descriptor != null && c.Descriptor.Id.SequenceEqual(args.CredentialId));
             };
 
-            if (creds.PublicKey == null)
-            {
-                throw new InvalidOperationException("No public key");
-            }
+            if (creds.PublicKey == null) throw new InvalidOperationException("No public key");
 
             // 5. Make the assertion
             var res = await _lib.MakeAssertionAsync(
@@ -124,7 +123,8 @@ public class MfaFido2SignInFidoController : Controller
             await _fido2Store.UpdateCounterAsync(res.CredentialId, res.Counter);
 
             // complete sign-in
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync() ?? throw new InvalidOperationException("Unable to load two-factor authentication user.");
+            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync() ??
+                       throw new InvalidOperationException("Unable to load two-factor authentication user.");
             var result = await _signInManager.TwoFactorSignInAsync("FIDO2", string.Empty, false, false);
 
             // 7. return OK to client

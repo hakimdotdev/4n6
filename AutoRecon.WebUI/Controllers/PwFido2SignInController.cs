@@ -1,21 +1,17 @@
 ﻿using AutoRecon.Infrastructure.Auth;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using System.Text;
 
-namespace Fido2Identity;
+namespace AutoRecon.WebUI.Controllers;
 
 [Route("api/[controller]")]
 public class PwFido2SignInController : Controller
 {
-    private readonly Fido2 _lib;
     private readonly Fido2Store _fido2Store;
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly Fido2 _lib;
     private readonly IOptions<Fido2Configuration> _optionsFido2Configuration;
+    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly UserManager<IdentityUser> _userManager;
 
     public PwFido2SignInController(
         Fido2Store fido2Store,
@@ -29,7 +25,7 @@ public class PwFido2SignInController : Controller
         _userManager = userManager;
         _fido2Store = fido2Store;
 
-        _lib = new Fido2(new Fido2Configuration()
+        _lib = new Fido2(new Fido2Configuration
         {
             ServerDomain = _optionsFido2Configuration.Value.ServerDomain,
             ServerName = _optionsFido2Configuration.Value.ServerName,
@@ -40,7 +36,8 @@ public class PwFido2SignInController : Controller
 
     private static string FormatException(Exception e)
     {
-        return string.Format("{0}{1}", e.Message, e.InnerException != null ? " (" + e.InnerException.Message + ")" : "");
+        return string.Format("{0}{1}", e.Message,
+            e.InnerException != null ? " (" + e.InnerException.Message + ")" : "");
     }
 
     [HttpPost]
@@ -54,12 +51,14 @@ public class PwFido2SignInController : Controller
 
             if (!string.IsNullOrEmpty(username))
             {
-                var identityUser = await _userManager.FindByNameAsync(username) ?? throw new ArgumentException("Username not found");
+                var identityUser = await _userManager.FindByNameAsync(username) ??
+                                   throw new ArgumentException("Username not found");
                 var user = new Fido2User
                 {
                     DisplayName = identityUser!.UserName,
                     Name = identityUser.UserName,
-                    Id = Fido2Store.GetUserNameInBytes(identityUser.UserName) // byte representation of userID is required
+                    Id = Fido2Store.GetUserNameInBytes(identityUser
+                        .UserName) // byte representation of userID is required
                 };
 
                 var items = await _fido2Store.GetCredentialsByUserNameAsync(identityUser.UserName);
@@ -68,10 +67,12 @@ public class PwFido2SignInController : Controller
 
             var exts = new AuthenticationExtensionsClientInputs
             {
-                UserVerificationMethod = true,
+                UserVerificationMethod = true
             };
 
-            var uv = string.IsNullOrEmpty(userVerification) ? UserVerificationRequirement.Discouraged : userVerification.ToEnum<UserVerificationRequirement>();
+            var uv = string.IsNullOrEmpty(userVerification)
+                ? UserVerificationRequirement.Discouraged
+                : userVerification.ToEnum<UserVerificationRequirement>();
             var options = _lib.GetAssertionOptions(
                 existingCredentials,
                 uv,
@@ -100,7 +101,8 @@ public class PwFido2SignInController : Controller
             var options = AssertionOptions.FromJson(jsonOptions);
 
             // 2. Get registered credential from database
-            var creds = await _fido2Store.GetCredentialByIdAsync(clientResponse.Id) ?? throw new Exception("Unknown credentials");
+            var creds = await _fido2Store.GetCredentialByIdAsync(clientResponse.Id) ??
+                        throw new Exception("Unknown credentials");
 
             // 3. Get credential counter from database
             var storedCounter = creds.SignatureCounter;
@@ -112,10 +114,7 @@ public class PwFido2SignInController : Controller
                 return storedCreds.Any(c => c.Descriptor?.Id.SequenceEqual(args.CredentialId) == true);
             };
 
-            if (creds.PublicKey == null)
-            {
-                throw new InvalidOperationException("No public key");
-            }
+            if (creds.PublicKey == null) throw new InvalidOperationException("No public key");
 
             // 5. Make the assertion
             var res = await _lib.MakeAssertionAsync(
@@ -124,8 +123,9 @@ public class PwFido2SignInController : Controller
             // 6. Store the updated counter
             await _fido2Store.UpdateCounterAsync(res.CredentialId, res.Counter);
 
-            var identityUser = await _userManager.FindByNameAsync(creds.UserName) ?? throw new InvalidOperationException("Unable to load user.");
-            await _signInManager.SignInAsync(identityUser, isPersistent: false);
+            var identityUser = await _userManager.FindByNameAsync(creds.UserName) ??
+                               throw new InvalidOperationException("Unable to load user.");
+            await _signInManager.SignInAsync(identityUser, false);
 
             // 7. return OK to client
             return Json(res);
